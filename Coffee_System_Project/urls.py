@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('coffee.urls')),
+    path('', include('Coffee_System_App.urls')),
 ]
 
 if settings.DEBUG:
