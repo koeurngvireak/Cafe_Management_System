@@ -4,7 +4,7 @@ from . import views
 app_name = 'Coffee_System_App'
 
 urlpatterns = [
-    path('', views.layout, name='layout')
+    path('', views.layout, name='layout'),
     
 ]
 
