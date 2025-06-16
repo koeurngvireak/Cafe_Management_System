@@ -2,19 +2,25 @@
 <nav class="sidebar bg-brown text-white p-3" style="min-width:220px; min-height:100vh;">
   <ul class="nav flex-column">
     <li class="nav-item mb-2">
-      <a class="nav-link text-white" href="#"><i class="fas fa-home me-2"></i>Dashboard</a>
+      <a class="nav-link text-white" href="{% url 'customer' %}"><i class="fas fa-home me-2"></i>Dashboard</a>
     </li>
     <li class="nav-item mb-2">
-      <a class="nav-link text-white" href="#"><i class="fas fa-coffee me-2"></i>Orders</a>
+      <a class="nav-link text-white" href="{% url 'menu' %}"><i class="fas fa-coffee me-2"></i>Menu_Items</a>
     </li>
     <li class="nav-item mb-2">
-      <a class="nav-link text-white" href="#"><i class="fas fa-users me-2"></i>Customers</a>
+      <a class="nav-link text-white" href="{% url 'order' %}"><i class="fas fa-users me-2"></i>Orders</a>
     </li>
     <li class="nav-item mb-2">
-      <a class="nav-link text-white" href="#"><i class="fas fa-boxes me-2"></i>Inventory</a>
+      <a class="nav-link text-white" href="{% url 'order_detail' %}"><i class="fas fa-boxes me-2"></i>Order_details</a>
     </li>
     <li class="nav-item mb-2">
-      <a class="nav-link text-white" href="#"><i class="fas fa-cogs me-2"></i>Settings</a>
+      <a class="nav-link text-white" href="{% url 'customer' %}"><i class="fas fa-cogs me-2"></i>Customers</a>
+    </li>
+    <li class="nav-item mb-2">
+      <a class="nav-link text-white" href="{% url 'add_user' %}"><i class="fas fa-chart-line me-2"></i>Add_Users</a>
+    </li>
+    <li class="nav-item mb-2">
+      <a class="nav-link text-white" href="{% url 'payment' %}"><i class="fas fa-cogs me-2"></i>Payments</a>
     </li>
   </ul>
 </nav>

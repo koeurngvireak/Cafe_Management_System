@@ -16,23 +16,23 @@ def contact(request):
 def about(request):
     return render(request, 'about.html')
 
-def costomer(request):
-    return render(request, 'costomers.html')
+def customer(request):
+    return render(request, 'Customers/customers.html')
 
 def menu(request):
-    return render(request, 'menus.html')
+    return render(request, 'Menu_Items/menus.html')
 
 def order_detail(request):
-    return render(request, 'order_details.html')
+    return render(request, 'Order_Details/order_details.html')
 
 def order(request):
-    return render(request, 'orders.html')
+    return render(request, 'Orders/orders.html')
 
 def payment(request):
-    return render(request, 'payments.html')
+    return render(request, 'Payments/payments.html')
 
-def staff(request):
-    return render(request, 'staffs.html')
+def add_user(request):
+    return render(request, 'Add_Users/add_user.html')
 
 
 
