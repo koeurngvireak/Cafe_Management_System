@@ -32,7 +32,7 @@ def payment(request):
     return render(request, 'Payments/payments.html')
 
 def add_user(request):
-    return render(request, 'Add_Users/add_user.html')
+    return render(request, 'Add_Users/add_users.html')
 
 
 
