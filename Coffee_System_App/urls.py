@@ -1,10 +1,9 @@
 from django.urls import path
-from . import views 
-
-app_name = 'Coffee_System_App'
+from . import views
 
 urlpatterns = [
-    path('', views.layout, name='layout'),
-    
+    path('', views.home, name='home'),
+    path('feature/', views.feature, name='feature'),
+    path('about/', views.about, name='about'),
+    path('contact/', views.contact, name='contact'),
 ]
-
