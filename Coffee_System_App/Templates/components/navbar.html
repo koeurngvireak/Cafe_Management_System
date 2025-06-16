@@ -1,24 +1,100 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-brown px-3">
-  <a class="navbar-brand fw-bold" href="{% url 'home' %}">
-    <i class="fas fa-mug-hot"></i> Coffee Management
-  </a>
-  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav ms-auto">
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home me-1"></i>Home</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'feature' %}"><i class="fas fa-star me-1"></i>Feature</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope me-1"></i>Contact</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'about' %}"><i class="fas fa-info-circle me-1"></i>About</a>
-      </li>
-    </ul>
-  </div>
+<nav class="navbar navbar-expand-lg sticky-top shadow" style="background: linear-gradient(90deg, #6f4e37 0%, #b4846c 100%); animation: cafeFadeIn 1.2s;">
+    <div class="container-fluid">
+        <button id="sidebarToggle" class="btn btn-link text-light me-2">
+            <i class="fas fa-bars fa-lg"></i>
+        </button>
+        <a class="navbar-brand text-light d-flex align-items-center fw-bold" href="{% url 'home' %}" style="font-family: 'Pacifico', cursive; font-size: 1.7rem; letter-spacing: 1px;">
+            <i class="fas fa-mug-hot me-2 fa-lg" style="animation: steam 2s infinite alternate;"></i>
+            <span>Café Manager</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item mx-1">
+                    <a class="nav-link text-light position-relative" href="{% url 'home' %}">
+                        <i class="fas fa-home me-1"></i> Home
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                <li class="nav-item mx-1">
+                    <a class="nav-link text-light position-relative" href="{% url 'feature' %}">
+                        <i class="fas fa-star me-1"></i> Features
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                <li class="nav-item mx-1">
+                    <a class="nav-link text-light position-relative" href="{% url 'about' %}">
+                        <i class="fas fa-info-circle me-1"></i> About
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                <li class="nav-item mx-1">
+                    <a class="nav-link text-light position-relative" href="{% url 'contact' %}">
+                        <i class="fas fa-envelope me-1"></i> Contact
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                {% if user.is_authenticated %}
+                <li class="nav-item mx-1">
+                    <a class="nav-link text-light position-relative" href="#">
+                        <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                <li class="nav-item mx-1">
+                    <a class="nav-link text-light position-relative" href="{% url 'logout' %}"data-bs-toggle="modal" data-bs-target="#logoutModal">
+                        <i class="fas fa-sign-out-alt me-1"></i> Logout
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="nav-item mx-1">
+                    <a class="nav-link text-light position-relative" href="{% url 'login' %}">
+                        <i class="fas fa-sign-in-alt me-1"></i> Login
+                        <span class="nav-underline"></span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
 </nav>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
+@keyframes cafeFadeIn {
+    from { opacity: 0; transform: translateY(-30px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+@keyframes steam {
+    0% { filter: blur(0px); transform: translateY(0);}
+    100% { filter: blur(2px); transform: translateY(-6px);}
+}
+.navbar {
+    border-bottom: 3px solid #d2b48c;
+}
+.nav-link {
+    transition: color 0.3s;
+    font-size: 1.1rem;
+    font-family: 'Segoe UI', sans-serif;
+}
+.nav-link:hover, .nav-link:focus {
+    color: #ffe5b4 !important;
+}
+.nav-underline {
+    display: block;
+    height: 2px;
+    width: 0;
+    background: #ffe5b4;
+    transition: width 0.3s;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+.nav-link:hover .nav-underline, .nav-link:focus .nav-underline {
+    width: 100%;
+}
+</style>

@@ -1,6 +1,49 @@
 from django.http import HttpResponse
-from django.shortcuts import render
-from django.views.generic import TemplateView
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.urls import reverse
+
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('home')  # Redirect if already logged in
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        remember = request.POST.get('remember')
+
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            
+            # Set session expiry based on remember me
+            if not remember:
+                request.session.set_expiry(0)
+            
+            # Get next URL from query parameters or use default
+            next_url = request.GET.get('next')
+            if next_url:
+                return redirect(next_url)
+            return redirect('pos')  # Change 'dashboard' to your default redirect URL
+        else:
+            messages.error(request, 'Invalid username or password')
+
+    return render(request, 'login/login.html')
+@login_required
+def custom_redirect(request):
+    if request.user.is_superuser:
+        return render(request, 'home')
+    else:
+        return redirect('pos')
+def logout_confirm(request):
+    if request.method == 'POST':
+        logout(request)
+        return redirect('login')
+    return render(request, 'login/logout.html')
 
 def base(request):
     return render(request, 'base.html')
@@ -16,23 +59,23 @@ def contact(request):
 def about(request):
     return render(request, 'about.html')
 
-def customer(request):
-    return render(request, 'Customers/customers.html')
+def dashboard(request):
+    return render(request, 'dashboard.html')
 
-def menu(request):
-    return render(request, 'Menu_Items/menus.html')
+def orders(request):
+    return render(request, 'orders.html')
 
-def order_detail(request):
-    return render(request, 'Order_Details/order_details.html')
+def inventory(request):
+    return render(request, 'inventory.html')
 
-def order(request):
-    return render(request, 'Orders/orders.html')
+def customers(request):
+    return render(request, 'customers.html')
 
-def payment(request):
-    return render(request, 'Payments/payments.html')
+def settings(request):
+    return render(request, 'settings.html')
 
-def add_user(request):
-    return render(request, 'Add_Users/add_users.html')
+def pos_system(request):
+    return render(request, 'pos/index.html')
 
 
 

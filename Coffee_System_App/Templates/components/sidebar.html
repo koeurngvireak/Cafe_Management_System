@@ -1,26 +1,273 @@
-<!-- sidebar.html -->
-<nav class="sidebar bg-brown text-white p-3" style="min-width:220px; min-height:100vh;">
-  <ul class="nav flex-column">
-    <li class="nav-item mb-2">
-      <a class="nav-link text-white" href="{% url 'customer' %}"><i class="fas fa-home me-2"></i>Dashboard</a>
-    </li>
-    <li class="nav-item mb-2">
-      <a class="nav-link text-white" href="{% url 'menu' %}"><i class="fas fa-coffee me-2"></i>Menu_Items</a>
-    </li>
-    <li class="nav-item mb-2">
-      <a class="nav-link text-white" href="{% url 'order' %}"><i class="fas fa-users me-2"></i>Orders</a>
-    </li>
-    <li class="nav-item mb-2">
-      <a class="nav-link text-white" href="{% url 'order_detail' %}"><i class="fas fa-boxes me-2"></i>Order_details</a>
-    </li>
-    <li class="nav-item mb-2">
-      <a class="nav-link text-white" href="{% url 'customer' %}"><i class="fas fa-cogs me-2"></i>Customers</a>
-    </li>
-    <li class="nav-item mb-2">
-      <a class="nav-link text-white" href="{% url 'add_user' %}"><i class="fas fa-chart-line me-2"></i>Add_Users</a>
-    </li>
-    <li class="nav-item mb-2">
-      <a class="nav-link text-white" href="{% url 'payment' %}"><i class="fas fa-cogs me-2"></i>Payments</a>
-    </li>
-  </ul>
-</nav>
+{% load static %}
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="cafe-brand animate__animated animate__fadeInLeft">
+            <i class="fas fa-mug-hot"></i>
+            <span>Café Manager</span>
+        </div>
+        <button id="sidebar-close" class="btn-close-sidebar d-md-none">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <div class="user-profile animate__animated animate__fadeInLeft animate__delay-1s">
+        <img src="{% static 'images/IMG_5992.PNG' %}" alt="User" class="user-image">
+        <div class="user-info">
+            <h6 class="user-name">{{ request.user.username|default:"" }}</h6>
+            <span class="user-role">{{ request.user.profile.role|default:"Manager" }}</span>
+        </div>
+    </div>
+
+    <ul class="sidebar-menu">
+        <li class="menu-item {% if request.path == '/dashboard/' %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-2s">
+            <a href="{% url 'dashboard' %}">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li class="menu-item {% if 'orders' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-3s">
+            <a href="{% url 'orders' %}">
+                <i class="fas fa-receipt"></i>
+                <span>Orders</span>
+                <span class="badge bg-danger float-end">5</span>
+            </a>
+        </li>
+        <li class="menu-item {% if 'inventory' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-4s">
+            <a href="{% url 'inventory' %}">
+                <i class="fas fa-boxes"></i>
+                <span>Inventory</span>
+            </a>
+        </li>
+        <li class="menu-item {% if 'customers' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-5s">
+            <a href="{% url 'customers' %}">
+                <i class="fas fa-users"></i>
+                <span>Customers</span>
+            </a>
+        </li>
+        <li class="menu-item {% if 'settings' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-6s">
+            <a href="#">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<style>
+.sidebar {
+    width: 270px;
+    height: 100vh;
+    background: linear-gradient(135deg, #3e2723 0%, #a1887f 100%);
+    color: #fff;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    transition: all 0.4s cubic-bezier(.77,0,.18,1);
+    box-shadow: 4px 0 24px rgba(62,39,35,0.15);
+    overflow-y: auto;
+    font-family: 'Quicksand', 'Segoe UI', sans-serif;
+}
+
+.sidebar-header {
+    padding: 24px 20px 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.07);
+}
+
+.cafe-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #ffe0b2;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.cafe-brand i {
+    font-size: 1.7rem;
+    color: #ffb300;
+    filter: drop-shadow(0 2px 4px #6d4c41);
+}
+
+.user-profile {
+    padding: 22px 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.04);
+}
+
+.user-image {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 3px solid #ffb300;
+    box-shadow: 0 2px 10px rgba(255,179,0,0.13);
+    object-fit: cover;
+    background: #fff;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-name {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fffde7;
+    letter-spacing: 0.5px;
+}
+
+.user-role {
+    font-size: 0.85rem;
+    color: #ffe082;
+    opacity: 0.85;
+    font-weight: 500;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 24px 0 0 0;
+    margin: 0;
+}
+
+.menu-item {
+    padding: 0 18px;
+    margin-bottom: 8px;
+    opacity: 0.98;
+    transition: transform 0.2s cubic-bezier(.77,0,.18,1), box-shadow 0.2s;
+}
+
+.menu-item a {
+    display: flex;
+    align-items: center;
+    padding: 13px 18px;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    background: rgba(255,255,255,0.03);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+    position: relative;
+}
+
+.menu-item a:hover, .menu-item.active a {
+    background: linear-gradient(90deg, #ffb300 0%, #ffe082 100%);
+    color: #3e2723;
+    transform: translateX(8px) scale(1.03);
+    box-shadow: 0 4px 16px rgba(255,179,0,0.09);
+}
+
+.menu-item i {
+    width: 22px;
+    margin-right: 14px;
+    font-size: 1.2rem;
+    color: #ffe082;
+    transition: color 0.2s;
+}
+
+.menu-item a:hover i, .menu-item.active a i {
+    color: #3e2723;
+}
+
+.badge {
+    margin-left: auto;
+    font-size: 0.8rem;
+    background: #d84315 !important;
+    color: #fff;
+    border-radius: 8px;
+    padding: 2px 8px;
+    font-weight: 700;
+    box-shadow: 0 1px 4px rgba(216,67,21,0.13);
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin-top: 18px;
+    background: rgba(255,255,255,0.03);
+    font-weight: 600;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.logout-btn:hover {
+    background: linear-gradient(90deg, #d84315 0%, #ffb300 100%);
+    color: #fffde7;
+    transform: translateX(8px) scale(1.03);
+}
+
+.logout-btn i {
+    margin-right: 12px;
+    color: #ffb300;
+    font-size: 1.2rem;
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: 220px;
+    }
+    .sidebar-header, .user-profile {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-110%);
+        box-shadow: none;
+    }
+    .sidebar.show {
+        transform: translateX(0);
+        box-shadow: 4px 0 24px rgba(62,39,35,0.15);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarClose = document.getElementById('sidebar-close');
+
+    // Animate sidebar in on load (desktop)
+    if(window.innerWidth > 768) {
+        sidebar.classList.add('show');
+    }
+
+    // Close sidebar on mobile
+    sidebarClose.addEventListener('click', () => {
+        sidebar.classList.remove('show');
+    });
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !e.target.matches('#sidebarToggle')) {
+            sidebar.classList.remove('show');
+        }
+    });
+
+    // Optional: Add a slight delay for menu item animations
+    const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
+    menuItems.forEach((item, idx) => {
+        item.style.animationDelay = `${0.1 + idx * 0.07}s`;
+    });
+});
+</script>
