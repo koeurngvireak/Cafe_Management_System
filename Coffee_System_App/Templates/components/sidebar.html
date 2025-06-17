@@ -22,32 +22,32 @@
         <li class="menu-item {% if request.path == '/dashboard/' %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-2s">
             <a href="{% url 'dashboard' %}">
                 <i class="fas fa-tachometer-alt"></i>
-                <span>Dashboard</span>
+                <span>Over_View</span>
             </a>
         </li>
         <li class="menu-item {% if 'orders' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-3s">
             <a href="{% url 'orders' %}">
                 <i class="fas fa-receipt"></i>
-                <span>Orders</span>
+                <span>Accept_Order</span>
                 <span class="badge bg-danger float-end">5</span>
             </a>
         </li>
         <li class="menu-item {% if 'inventory' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-4s">
             <a href="{% url 'inventory' %}">
                 <i class="fas fa-boxes"></i>
-                <span>Inventory</span>
+                <span>Pending</span>
             </a>
         </li>
         <li class="menu-item {% if 'customers' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-5s">
             <a href="{% url 'customers' %}">
                 <i class="fas fa-users"></i>
-                <span>Customers</span>
+                <span>Update_drink</span>
             </a>
         </li>
         <li class="menu-item {% if 'settings' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-6s">
             <a href="#">
                 <i class="fas fa-cog"></i>
-                <span>Settings</span>
+                <span>Cheach_History</span>
             </a>
         </li>
     </ul>
