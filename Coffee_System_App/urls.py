@@ -7,6 +7,8 @@ urlpatterns = [
     path('logout/', views.logout_confirm, name='logout'),
     path('pos/', views.pos_system, name='pos'),
     path('custom_redirect/', views.custom_redirect, name='custom_redirect'),
+    
+    
     path('home/', views.home, name='home'),
     path('feature/', views.feature, name='feature'),
     path('about/', views.about, name='about'),
