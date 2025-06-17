@@ -5,40 +5,37 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
 
-
+# Login page
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('home')  # Redirect if already logged in
-
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        remember = request.POST.get('remember')
-
+    if request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
+        if user:
             login(request, user)
-            
-            # Set session expiry based on remember me
-            if not remember:
-                request.session.set_expiry(0)
-            
-            # Get next URL from query parameters or use default
-            next_url = request.GET.get('next')
-            if next_url:
-                return redirect(next_url)
-            return redirect('pos')  # Change 'dashboard' to your default redirect URL
+            if user.is_superuser:  # Admin
+                return redirect("home.html")
+            else:  # Regular user
+                return redirect("pos")
         else:
-            messages.error(request, 'Invalid username or password')
+            return render(request, "login/login.html", {"error": "Invalid credentials"})
+    return render(request, "login/login.html")
 
-    return render(request, 'login/login.html')
-@login_required
-def custom_redirect(request):
+# Logout
+def logout_view(request):
+    logout(request)
+    return redirect("login")
+
+@login_required(login_url="login")
+def admin_dashboard(request):
     if request.user.is_superuser:
-        return render(request, 'home')
-    else:
-        return redirect('pos')
+        return render(request, "home.html")
+    return redirect("pos")
+
+@login_required(login_url="login")
+def user_home(request):
+    return render(request, "pos/index.html")
+
 def logout_confirm(request):
     if request.method == 'POST':
         logout(request)
@@ -47,8 +44,6 @@ def logout_confirm(request):
 
 def base(request):
     return render(request, 'base.html')
-def home(request):
-    return render(request, 'home.html')
 
 def feature(request):
     return render(request, 'feature.html')
@@ -60,19 +55,19 @@ def about(request):
     return render(request, 'about.html')
 
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    return render(request, 'overview.html')
 
 def orders(request):
-    return render(request, 'orders.html')
+    return render(request, 'accept_order.html')
 
 def inventory(request):
-    return render(request, 'inventory.html')
+    return render(request, 'pending.html')
 
 def customers(request):
-    return render(request, 'customers.html')
+    return render(request, 'update_drink.html')
 
 def settings(request):
-    return render(request, 'settings.html')
+    return render(request, 'cheach_history.html')
 
 def pos_system(request):
     return render(request, 'pos/index.html')
