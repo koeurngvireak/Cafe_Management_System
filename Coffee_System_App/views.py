@@ -60,19 +60,19 @@ def about(request):
     return render(request, 'about.html')
 
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    return render(request, 'overview.html')
 
 def orders(request):
-    return render(request, 'orders.html')
+    return render(request, 'accept_order.html')
 
 def inventory(request):
-    return render(request, 'inventory.html')
+    return render(request, 'pending.html')
 
 def customers(request):
-    return render(request, 'customers.html')
+    return render(request, 'update_drink.html')
 
 def settings(request):
-    return render(request, 'settings.html')
+    return render(request, 'cheach_history.html')
 
 def pos_system(request):
     return render(request, 'pos/index.html')
