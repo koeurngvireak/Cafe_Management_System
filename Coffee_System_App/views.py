@@ -1,81 +1,99 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.urls import reverse
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .forms import CustomLoginForm
+from django.views.decorators.cache import never_cache
+
 
 
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('home')  # Redirect if already logged in
-
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        remember = request.POST.get('remember')
-
         user = authenticate(request, username=username, password=password)
-        
+
         if user is not None:
             login(request, user)
-            
-            # Set session expiry based on remember me
-            if not remember:
-                request.session.set_expiry(0)
-            
-            # Get next URL from query parameters or use default
-            next_url = request.GET.get('next')
-            if next_url:
-                return redirect(next_url)
-            return redirect('pos')  # Change 'dashboard' to your default redirect URL
-        else:
-            messages.error(request, 'Invalid username or password')
 
-    return render(request, 'login/login.html')
-@login_required
-def custom_redirect(request):
-    if request.user.is_superuser:
-        return render(request, 'home')
-    else:
-        return redirect('pos')
+            if user.is_staff:
+                return redirect('home')        # Admin
+            else:
+                return redirect('pos-index')   # Normal user
+
+        else:
+            return render(request, 'login/Login.html', {'error': 'Invalid credentials'})
+
+    return render(request, 'login/Login.html')
+
 def logout_confirm(request):
     if request.method == 'POST':
         logout(request)
         return redirect('login')
     return render(request, 'login/logout.html')
 
-def base(request):
-    return render(request, 'base.html')
+def logout_confirm2(request):
+    if request.method == 'POST':
+        logout(request)
+        return redirect('login')
+    return render(request, 'pos/logout2.html')
+    
+@login_required(login_url='login')
+@user_passes_test(lambda u: u.is_staff)
 def home(request):
     return render(request, 'home.html')
 
+@login_required(login_url='login')
+@user_passes_test(lambda u: not u.is_staff)
+def pos_system(request):
+    return render(request, 'pos/index.html')
+
+@login_required(login_url='login')
+@user_passes_test(lambda u: u.is_staff)
 def feature(request):
     return render(request, 'feature.html')
 
+@login_required(login_url='login')
+@user_passes_test(lambda u: u.is_staff)
 def contact(request):
     return render(request, 'contact.html')
 
+@login_required(login_url='login')
+@user_passes_test(lambda u: u.is_staff)
 def about(request):
     return render(request, 'about.html')
 
+@login_required(login_url='login')
+@user_passes_test(lambda u: u.is_staff)
 def dashboard(request):
     return render(request, 'overview.html')
 
+@login_required(login_url='login')
+@user_passes_test(lambda u: u.is_staff)
 def orders(request):
     return render(request, 'accept_order.html')
-
+@login_required(login_url='login')
+@user_passes_test(lambda u: u.is_staff)
 def inventory(request):
     return render(request, 'pending.html')
 
+@login_required(login_url='login')
+@user_passes_test(lambda u: u.is_staff)
 def customers(request):
     return render(request, 'update_drink.html')
 
+@login_required(login_url='login')
+@user_passes_test(lambda u: u.is_staff)
 def settings(request):
     return render(request, 'cheach_history.html')
 
-def pos_system(request):
-    return render(request, 'pos/index.html')
+@login_required(login_url='login')
+@user_passes_test(lambda u: not u.is_staff)
+def order_success(request):
+    return render(request, 'pos/order_success.html')
+
+
+
 
 
 
