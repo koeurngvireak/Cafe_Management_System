@@ -142,7 +142,7 @@
                 </div>
                 <div class="modal-footer modal-footer-custom">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                    <form id="checkout-form" method="POST" action="#">
+                    <form id="checkout-form" method="POST" action="{% url 'checkout' %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-success">Confirm</button>
                     </form>
@@ -243,7 +243,7 @@
                 return;
             }
 
-            fetch('#', {
+            fetch('{% url "add_to_cart" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -286,7 +286,7 @@
         // Handler for removing item from cart
         function handleRemoveFromCart(event) {
             const drinkId = this.dataset.drinkId;
-            fetch('#', {
+            fetch('{% url "remove_from_cart" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -315,7 +315,7 @@
             const drinkId = this.dataset.drinkId;
             const newQuantity = this.value;
 
-            fetch('#', {
+            fetch('{% url "update_cart" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -392,7 +392,7 @@
         // Handle Clear All items in cart (frontend and backend)
         clearCartBtn.addEventListener('click', function() {
             if (confirm("Are you sure you want to clear the entire cart?")) {
-                 fetch('#', { // Reusing update_cart to clear everything
+                 fetch('{% url "update_cart" %}', { // Reusing update_cart to clear everything
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -424,7 +424,7 @@
                 const cartItems = JSON.parse(JSON.stringify({{ cart_items|safe }})); // Deep copy current cart items
                 let updates = [];
                 cartItems.forEach(item => {
-                    updates.push(fetch('#', {
+                    updates.push(fetch('{% url "update_cart" %}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
