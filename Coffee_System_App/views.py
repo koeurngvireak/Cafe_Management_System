@@ -87,7 +87,10 @@ def customers(request):
 def settings(request):
     return render(request, 'cheach_history.html')
 
-
+@login_required(login_url='login')
+@user_passes_test(lambda u: not u.is_staff)
+def order_success(request):
+    return render(request, 'pos/order_success.html')
 
 
 
