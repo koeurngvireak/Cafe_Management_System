@@ -1,465 +1,223 @@
-{% extends 'pos/basePOS.html' %}
+{% extends 'base.html' %} {# Assuming basePOS.html for POS-specific layout #}
 {% load static %}
 
-{% block left_content %}
-    <div class="card mt-3" id="selected-drink-detail">
-        <h4 class="card-title mb-3">Mocha</h4> {# Default to Mocha or first drink #}
-        <ul class="list-unstyled" id="selected-drink-prices">
-            <li>Hot <span>$1.25</span></li>
-            <li>Iced <span>$2.15</span></li>
-            <li>Frappe <span>$2.65</span></li>
-        </ul>
-        <img src="{% static 'images/mocha.png' %}" alt="Mocha" class="img-fluid mb-3 mx-auto" id="selected-drink-image"> {# Placeholder image #}
+{% block title %}POS System{% endblock %}
 
-        <div class="mb-3 text-start">
-            <label for="drinkType" class="form-label">Type</label>
-            <select class="form-select" id="drinkType" name="drink_type">
-                <option value="Hot">Hot</option>
-                <option value="Iced">Iced</option>
-                <option value="Frappe">Frappe</option>
-            </select>
-        </div>
-        <div class="mb-3 text-start">
-            <label for="quantity" class="form-label">Quantity</label>
-            <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1">
-        </div>
-        <button type="button" class="btn btn-primary w-100" id="addToCartBtn">ADD TO CART</button>
-        <input type="hidden" id="selectedDrinkId"> {# Hidden input to store the ID of the selected drink #}
-    </div>
-{% endblock %}
-
-{% block right_content %}
-    <h3 class="mb-4">Our Menu</h3>
-    <table class="table table-hover menu-table">
-        <thead class="table-dark">
-            <tr>
-                <th>Drink</th>
-                <th>Type</th>
-                <th>Price (Hot)</th> {# We'll show hot price by default in the table #}
-                <th>Image</th>
-                <th></th> {# For select button #}
-            </tr>
-        </thead>
-        <tbody>
-            {% for drink in drinks %}
-            <tr class="menu-item-row"
-                data-drink-id="{{ drink.id }}"
-                data-drink-name="{{ drink.name }}"
-                data-hot-price="{{ drink.price }}"
-                data-iced-price="{% if drink.drink_type == 'Iced' %}{{ drink.price }}{% else %}{{ drink.price|add:1.00 }}{% endif %}"
-                data-frappe-price="{% if drink.drink_type == 'Frappe' %}{{ drink.price }}{% else %}{{ drink.price|add:1.40 }}{% endif %}"
-                data-image="{% if drink.image %}{{ drink.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}">
-                <td>{{ drink.name }}</td>
-                <td>{{ drink.drink_type }}</td>
-                <td>${{ drink.price|floatformat:2 }}</td>
-                <td>
-                    <img src="{% if drink.image %}{{ drink.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}" alt="{{ drink.name }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
-                </td>
-                <td>
-                    <button type="button" class="btn btn-sm btn-info select-drink-btn">Select</button>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" class="text-center">No menu items available.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="order-summary-section mt-4">
-        <table class="table table-sm">
-            <thead>
-                <tr>
-                    <th>N°</th>
-                    <th>Drink</th>
-                    <th>Type</th>
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    <th>Total Price</th>
-                    <th></th> {# For delete button #}
-                </tr>
-            </thead>
-            <tbody id="cart-items-table-body">
-                {% for item in cart_items %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.type }}</td>
-                    <td>${{ item.price|floatformat:2 }}</td>
-                    <td>
-                        <input type="number" class="form-control form-control-sm cart-quantity-input"
-                               data-drink-id="{{ item.id }}" value="{{ item.quantity }}" min="1" style="width: 70px;">
-                    </td>
-                    <td>${{ item.total_price|floatformat:2 }}</td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-danger remove-from-cart-btn" data-drink-id="{{ item.id }}">X</button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="text-center">No items in cart.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <div class="total-price-display">
-            Total: $<span id="cart-total-price">{{ total_cart_price|floatformat:2 }}</span>
-        </div>
-        <div class="order-action-buttons btn-group-custom">
-            <button type="button" class="btn btn-danger" id="clearCartBtn">Delete</button> {# Renamed to clearCartBtn for clarity #}
-            <button type="button" class="btn btn-secondary" id="resetQuantitiesBtn">Reset</button> {# Added for resetting quantities #}
-            <button type="button" class="btn btn-success" id="orderBtn" data-bs-toggle="modal" data-bs-target="#orderSummaryModal">Order</button>
-        </div>
-    </div>
-
-    <div class="modal fade" id="orderSummaryModal" tabindex="-1" aria-labelledby="orderSummaryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-content-custom">
-                <div class="modal-header modal-header-custom">
-                    <h5 class="modal-title" id="orderSummaryModalLabel">Order Summary</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>N°</th>
-                                <th>Drink</th>
-                                <th>Type</th>
-                                <th>Price</th>
-                                <th>Qty</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody id="modal-cart-items-body">
-                            {# Cart items will be loaded here by JavaScript #}
-                        </tbody>
-                    </table>
-                    <div class="total-price-display">
-                        Total: $<span id="modal-cart-total-price">{{ total_cart_price|floatformat:2 }}</span>
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Our Menu</h2>
+            <div class="row row-cols-1 row-cols-md-3 g-4" id="menu-items">
+                {% for drink in drinks %}
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ drink.name }}</h5>
+                            <p class="card-text">
+                                {% if drink.hot_price %}Hot: ${{ drink.hot_price|floatformat:2 }}<br>{% endif %}
+                                {% if drink.iced_price %}Iced: ${{ drink.iced_price|floatformat:2 }}<br>{% endif %}
+                                {% if drink.frappe_price %}Frappe: ${{ drink.frappe_price|floatformat:2 }}{% endif %}
+                            </p>
+                            <div class="d-grid gap-2 mt-2">
+                                {% if drink.hot_price %}<button class="btn btn-sm btn-primary add-to-order" data-id="{{ drink.id }}" data-name="{{ drink.name }}" data-price="{{ drink.hot_price|floatformat:2 }}" data-type="hot">Add Hot</button>{% endif %}
+                                {% if drink.iced_price %}<button class="btn btn-sm btn-info add-to-order" data-id="{{ drink.id }}" data-name="{{ drink.name }}" data-price="{{ drink.iced_price|floatformat:2 }}" data-type="iced">Add Iced</button>{% endif %}
+                                {% if drink.frappe_price %}<button class="btn btn-sm btn-warning add-to-order" data-id="{{ drink.id }}" data-name="{{ drink.name }}" data-price="{{ drink.frappe_price|floatformat:2 }}" data-type="frappe">Add Frappe</button>{% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer modal-footer-custom">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                    <form id="checkout-form" method="POST" action="#">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-success">Confirm</button>
-                    </form>
+                {% empty %}
+                <p>No drinks available. Please add some via Update Menu.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <h2>Current Order</h2>
+            <form id="customer-info-form">
+                <div class="mb-3">
+                    <label for="customerName" class="form-label">Customer Name (Optional)</label>
+                    <input type="text" class="form-control" id="customerName" name="customer_name" placeholder="Enter customer name">
                 </div>
+                <div class="mb-3">
+                    <label for="customerPhone" class="form-label">Customer Phone (Optional)</label>
+                    <input type="text" class="form-control" id="customerPhone" name="customer_phone" placeholder="Enter phone number">
+                </div>
+            </form>
+
+            <table class="table table-bordered mt-3">
+                <thead>
+                    <tr>
+                        <th>Drink</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="order-table-body">
+                    </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" class="text-end">Total Items:</th>
+                        <td id="total-items">0</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th colspan="3" class="text-end">Grand Total:</th>
+                        <td id="grand-total">$0.00</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-success btn-lg" id="confirm-order-btn">Confirm Order</button>
+                <button type="button" class="btn btn-danger btn-lg" id="cancel-all-btn">Cancel All</button>
             </div>
         </div>
     </div>
-{% endblock %}
+</div>
 
-{% block extra_js %}
 <script>
-    const STATIC_IMAGE_PATH = "{% static 'images/' %}";
+document.addEventListener('DOMContentLoaded', function() {
+    let currentOrder = []; // Array to hold {drink_id, name, price, quantity}
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const selectedDrinkPanel = document.getElementById('selected-drink-detail');
-        const selectedDrinkName = selectedDrinkPanel.querySelector('h4');
-        const selectedDrinkPrices = document.getElementById('selected-drink-prices');
-        const selectedDrinkImage = document.getElementById('selected-drink-image');
-        const drinkTypeSelect = document.getElementById('drinkType');
-        const quantityInput = document.getElementById('quantity');
-        const addToCartBtn = document.getElementById('addToCartBtn');
-        const selectedDrinkIdInput = document.getElementById('selectedDrinkId');
+    const orderTableBody = document.getElementById('order-table-body');
+    const totalItemsSpan = document.getElementById('total-items');
+    const grandTotalSpan = document.getElementById('grand-total');
+    const confirmOrderBtn = document.getElementById('confirm-order-btn');
+    const cancelAllBtn = document.getElementById('cancel-all-btn');
+    const customerNameInput = document.getElementById('customerName');
+    const customerPhoneInput = document.getElementById('customerPhone');
 
-        const menuTableRows = document.querySelectorAll('.menu-item-row');
-        const selectDrinkBtns = document.querySelectorAll('.select-drink-btn');
+    function renderOrder() {
+        orderTableBody.innerHTML = '';
+        let totalItems = 0;
+        let grandTotal = 0;
 
-        const cartItemsTableBody = document.getElementById('cart-items-table-body');
-        const cartTotalPriceSpan = document.getElementById('cart-total-price');
-        const orderSummaryModal = document.getElementById('orderSummaryModal');
-        const modalCartItemsBody = document.getElementById('modal-cart-items-body');
-        const modalCartTotalPriceSpan = document.getElementById('modal-cart-total-price');
-        const clearCartBtn = document.getElementById('clearCartBtn');
-        const resetQuantitiesBtn = document.getElementById('resetQuantitiesBtn'); // New reset button
+        currentOrder.forEach((item, index) => {
+            const row = orderTableBody.insertRow();
+            row.insertCell(0).textContent = item.name;
+            const qtyCell = row.insertCell(1);
+            const priceCell = row.insertCell(2);
+            const totalCell = row.insertCell(3);
+            const actionsCell = row.insertCell(4);
 
+            qtyCell.textContent = item.quantity;
+            priceCell.textContent = `$${item.price.toFixed(2)}`;
+            totalCell.textContent = `$${(item.quantity * item.price).toFixed(2)}`;
 
-        let currentSelectedDrinkData = null; // Store data of the currently selected drink
+            const removeBtn = document.createElement('button');
+            removeBtn.classList.add('btn', 'btn-sm', 'btn-danger');
+            removeBtn.textContent = 'X';
+            removeBtn.onclick = () => removeItem(index);
+            actionsCell.appendChild(removeBtn);
 
-        // Function to update the left panel based on selected drink data
-        function updateLeftPanel(drinkData) {
-            selectedDrinkName.textContent = drinkData.name;
-            selectedDrinkPrices.innerHTML = `
-                <li>Hot <span>$${parseFloat(drinkData.hotPrice).toFixed(2)}</span></li>
-                <li>Iced <span>$${parseFloat(drinkData.icedPrice).toFixed(2)}</span></li>
-                <li>Frappe <span>$${parseFloat(drinkData.frappePrice).toFixed(2)}</span></li>
-            `;
-            selectedDrinkImage.src = drinkData.image;
-            selectedDrinkIdInput.value = drinkData.id; // Set the hidden input value
-
-            // Reset quantity and type to default
-            quantityInput.value = 1;
-            drinkTypeSelect.value = 'Hot'; // Default to Hot
-            currentSelectedDrinkData = drinkData; // Set the current selected drink data
-        }
-
-        // Initialize left panel with the first drink from the table
-        if (menuTableRows.length > 0) {
-            const firstRow = menuTableRows[0];
-            const initialDrinkData = {
-                id: firstRow.dataset.drinkId,
-                name: firstRow.dataset.drinkName,
-                hotPrice: firstRow.dataset.hotPrice,
-                icedPrice: firstRow.dataset.icedPrice,
-                frappePrice: firstRow.dataset.frappePrice,
-                image: firstRow.dataset.image
-            };
-            updateLeftPanel(initialDrinkData);
-        }
-
-        // Event listener for clicking on 'Select' buttons in the menu table
-        selectDrinkBtns.forEach(button => {
-            button.addEventListener('click', function() {
-                const row = this.closest('.menu-item-row');
-                const drinkData = {
-                    id: row.dataset.drinkId,
-                    name: row.dataset.drinkName,
-                    hotPrice: row.dataset.hotPrice,
-                    icedPrice: row.dataset.icedPrice,
-                    frappePrice: row.dataset.frappePrice,
-                    image: row.dataset.image
-                };
-                updateLeftPanel(drinkData);
-            });
+            totalItems += item.quantity;
+            grandTotal += (item.quantity * item.price);
         });
 
-        // Event listener for Add to Cart button
-        addToCartBtn.addEventListener('click', function() {
-            if (!currentSelectedDrinkData) {
-                alert("Please select a drink from the menu first.");
-                return;
-            }
+        totalItemsSpan.textContent = totalItems;
+        grandTotalSpan.textContent = `$${grandTotal.toFixed(2)}`;
+    }
 
-            const drinkId = selectedDrinkIdInput.value; // Get ID from the hidden input
-            const drinkType = drinkTypeSelect.value;
-            const quantity = quantityInput.value;
+    function addItem(drinkId, drinkName, drinkPrice, drinkType) {
+        // Find if the same drink (and type if applicable) is already in the order
+        const existingItemIndex = currentOrder.findIndex(item => 
+            item.drink_id === drinkId && item.type === drinkType
+        );
 
-            if (quantity <= 0) {
-                alert("Quantity must be at least 1.");
-                return;
-            }
-
-            fetch('#', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: new URLSearchParams({
-                    'drink_id': drinkId,
-                    'drink_type': drinkType,
-                    'quantity': quantity
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log(data.message);
-                    location.reload(); // Reload the page to update cart display
-                } else {
-                    alert('Error adding to cart: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while adding to cart.');
-            });
-        });
-
-        // Function to attach/re-attach event listeners for cart quantity and remove buttons
-        function attachCartEventListeners() {
-            document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
-                button.removeEventListener('click', handleRemoveFromCart); // Prevent duplicate listeners
-                button.addEventListener('click', handleRemoveFromCart);
-            });
-
-            document.querySelectorAll('.cart-quantity-input').forEach(input => {
-                input.removeEventListener('change', handleQuantityChange); // Prevent duplicate listeners
-                input.addEventListener('change', handleQuantityChange);
+        if (existingItemIndex > -1) {
+            currentOrder[existingItemIndex].quantity++;
+        } else {
+            currentOrder.push({
+                drink_id: drinkId,
+                name: `${drinkName} (${drinkType.charAt(0).toUpperCase() + drinkType.slice(1)})`,
+                price: parseFloat(drinkPrice),
+                quantity: 1,
+                type: drinkType
             });
         }
+        renderOrder();
+    }
 
-        // Handler for removing item from cart
-        function handleRemoveFromCart(event) {
-            const drinkId = this.dataset.drinkId;
-            fetch('#', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: new URLSearchParams({
-                    'drink_id': drinkId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload(); // Reload to update UI completely
-                } else {
-                    alert('Error removing item: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while removing item from cart.');
-            });
-        }
+    function removeItem(index) {
+        currentOrder.splice(index, 1);
+        renderOrder();
+    }
 
-        // Handler for quantity change in cart
-        function handleQuantityChange(event) {
-            const drinkId = this.dataset.drinkId;
-            const newQuantity = this.value;
+    function clearOrder() {
+        currentOrder = [];
+        customerNameInput.value = '';
+        customerPhoneInput.value = '';
+        renderOrder();
+    }
 
-            fetch('#', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: new URLSearchParams({
-                    'drink_id': drinkId,
-                    'quantity': newQuantity
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload(); // Reload to update UI completely
-                } else {
-                    alert('Error updating quantity: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while updating quantity.');
-            });
-        }
-
-        // Attach initial event listeners for cart
-        attachCartEventListeners();
-
-        // Populate Order Summary Modal when it's shown
-        orderSummaryModal.addEventListener('show.bs.modal', function (event) {
-            let cartItemsData = [];
-            let currentCartTotal = 0;
-            const rows = cartItemsTableBody.querySelectorAll('tr');
-            rows.forEach((row, index) => {
-                if (row.querySelector('td[colspan="7"]')) return; // Skip "No items" row
-                const cells = row.querySelectorAll('td');
-                const drinkName = cells[1].textContent;
-                const drinkType = cells[2].textContent;
-                const price = parseFloat(cells[3].textContent.replace('$', ''));
-                const quantity = parseInt(cells[4].querySelector('input').value);
-                const total = parseFloat(cells[5].textContent.replace('$', ''));
-
-                cartItemsData.push({
-                    number: index + 1,
-                    drink: drinkName,
-                    type: drinkType,
-                    price: price,
-                    qty: quantity,
-                    total: total
-                });
-                currentCartTotal += total;
-            });
-
-            let modalHtml = '';
-            if (cartItemsData.length === 0) {
-                modalHtml = '<tr><td colspan="6" class="text-center">No items in cart.</td></tr>';
-            } else {
-                cartItemsData.forEach(item => {
-                    modalHtml += `
-                        <tr>
-                            <td>${item.number}</td>
-                            <td>${item.drink}</td>
-                            <td>${item.type}</td>
-                            <td>$${item.price.toFixed(2)}</td>
-                            <td>${item.qty}</td>
-                            <td>$${item.total.toFixed(2)}</td>
-                        </tr>
-                    `;
-                });
-            }
-            modalCartItemsBody.innerHTML = modalHtml;
-            modalCartTotalPriceSpan.textContent = currentCartTotal.toFixed(2);
+    // Event listener for "Add to Order" buttons
+    document.querySelectorAll('.add-to-order').forEach(button => {
+        button.addEventListener('click', function() {
+            const drinkId = this.dataset.id;
+            const drinkName = this.dataset.name;
+            const drinkPrice = this.dataset.price;
+            const drinkType = this.dataset.type;
+            addItem(drinkId, drinkName, drinkPrice, drinkType);
         });
-
-        // Handle Clear All items in cart (frontend and backend)
-        clearCartBtn.addEventListener('click', function() {
-            if (confirm("Are you sure you want to clear the entire cart?")) {
-                 fetch('#', { // Reusing update_cart to clear everything
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: new URLSearchParams({
-                        'drink_id': 'all', // A special ID to indicate clear all
-                        'quantity': '0'
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload(); // Reload to reflect empty cart
-                    } else {
-                        alert('Error clearing cart: ' + data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while clearing the cart.');
-                });
-            }
-        });
-
-        // Handle "Reset" button (reset quantities of items currently in cart to 1, or remove if 0)
-        resetQuantitiesBtn.addEventListener('click', function() {
-            if (confirm("Are you sure you want to reset quantities of all items in cart to 1?")) {
-                const cartItems = JSON.parse(JSON.stringify({{ cart_items|safe }})); // Deep copy current cart items
-                let updates = [];
-                cartItems.forEach(item => {
-                    updates.push(fetch('#', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        },
-                        body: new URLSearchParams({
-                            'drink_id': item.id,
-                            'quantity': 1 // Reset quantity to 1
-                        })
-                    }).then(response => response.json()));
-                });
-
-                Promise.all(updates)
-                    .then(results => {
-                        const allSuccess = results.every(res => res.success);
-                        if (allSuccess) {
-                            location.reload();
-                        } else {
-                            alert("Some items failed to reset quantities. Please try again.");
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error during reset:', error);
-                        alert('An error occurred while resetting quantities.');
-                    });
-            }
-        });
-
-        // Checkout form submission
-        const checkoutForm = document.getElementById('checkout-form');
-        if (checkoutForm) {
-            checkoutForm.addEventListener('submit', function(event) {
-                // Default form submission handles the POST request
-            });
-        }
     });
+
+    // Event listener for "Confirm Order"
+    confirmOrderBtn.addEventListener('click', function() {
+        if (currentOrder.length === 0) {
+            alert('Please add items to the order before confirming.');
+            return;
+        }
+
+        const customerName = customerNameInput.value.trim();
+        const customerPhone = customerPhoneInput.value.trim();
+
+        const formData = new FormData();
+        formData.append('customer_name', customerName);
+        formData.append('customer_phone', customerPhone);
+        formData.append('total_drinks', totalItemsSpan.textContent);
+        formData.append('total_price', parseFloat(grandTotalSpan.textContent.replace('$', '')));
+        
+        // Append each item individually as a JSON string
+        currentOrder.forEach(item => {
+            formData.append('items[]', JSON.stringify({
+                drink_id: item.drink_id,
+                quantity: item.quantity,
+                price_at_order: item.price // Use the price from the current order for consistency
+            }));
+        });
+
+        // Add CSRF token
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        formData.append('csrfmiddlewaretoken', csrftoken);
+
+        fetch('{% url "process_order" %}', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert(data.message + ` Order ID: ${data.order_id}`);
+                clearOrder(); // Clear the current order after successful submission
+            } else {
+                alert('Error processing order: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing the order.');
+        });
+    });
+
+    // Event listener for "Cancel All"
+    cancelAllBtn.addEventListener('click', clearOrder);
+
+    renderOrder(); // Initial render
+});
 </script>
 {% endblock %}

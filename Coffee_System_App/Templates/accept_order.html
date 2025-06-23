@@ -1,78 +1,231 @@
-{%extends "base.html" %}
-{%load static%}
+{% extends 'base.html' %}
+{% load static %}
 
-{%block content%}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order_accept</title>
-</head>
-<body>
-                                                         <!-- Bootstrap 5 CDN -->
-                            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-                            
-                            <style>
-                              .absolute-center {
-                                position: absolute;
-                                top: 50%;
-                                left: 50%;
-                                transform: translate(-35%, -50%);
-                                width: 90vw;
-                                max-width: 900px;
-                              }
-                            </style>
-                            
-                            <div class="absolute-center">
-                              <!-- Order Table -->
-                              <div class="card mb-4 shadow-sm">
-                                <div class="card-header bg-primary text-white text-center">
-                                  <h5 class="mb-0">Order Table</h5>
-                                </div>
-                                <div class="card-body p-0">
-                                  <table class="table table-hover mb-0 text-center">
-                                    <thead class="table-light">
-                                      <tr>
-                                        <th>N⁰</th>
-                                        <th>Customer ID</th>
-                                        <th>Total Drink</th>
-                                        <th>Total Price ($)</th>
-                                      </tr>
-                                  </table>
-                                </div>
-                              </div>
-                            
-                              <!-- Order Detail Table -->
-                              <div class="card shadow-sm">
-                                <div class="card-header bg-secondary text-white text-center">
-                                  <h5 class="mb-0">Order Detail Table</h5>
-                                </div>
-                                <div class="card-body p-0">
-                                  <table class="table table-striped mb-0 text-center">
-                                    <thead class="table-light">
-                                      <tr>
-                                        <th>N⁰</th>
-                                        <th>Drink</th>
-                                        <th>Price ($)</th>
-                                        <th>QTY</th>
-                                        <th>Total Price ($)</th>
-                                      </tr>
-                                    </thead>
-                                    <tfoot>
-                                      <tr>
-                                        <th colspan="4" class="text-end">Total :</th>
-                                        <th></th>
-                                      </tr>
-                                    </tfoot>
-                                  </table>
-                                </div>
-                                <div class="card-footer d-flex justify-content-center gap-5">
-                                  <button class="btn btn-success">Confirm Order</button>
-                                  <button class="btn btn-danger">Cancel Order</button>
-                                </div>
-                              </div>
-                            </div>
-</body>
-</html>
-{%endblock%}
+{% block title %}Accept Orders{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Accept Orders</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Pending Orders</h2>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Customer ID</th>
+                        <th>Total Drink</th>
+                        <th>Total Price</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="pending-orders-table-body">
+                    {% for order in pending_orders %}
+                    <tr data-order-id="{{ order.id }}">
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.customer.customer_id|default:"N/A" }}</td>
+                        <td>{{ order.total_drinks }}</td>
+                        <td>${{ order.total_price|floatformat:2 }}</td>
+                        <td><span class="badge bg-warning">{{ order.status|capfirst }}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-info view-details-btn" data-order-id="{{ order.id }}">View Details</button>
+                            <button class="btn btn-sm btn-success confirm-order-btn" data-order-id="{{ order.id }}">Confirm</button>
+                            <button class="btn btn-sm btn-danger cancel-order-btn" data-order-id="{{ order.id }}">Cancel</button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No pending orders.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            <h2>Order Details</h2>
+            <div id="order-details-card" class="card" style="display: none;">
+                <div class="card-header">
+                    Order #<span id="detail-order-id"></span> 
+                    <span class="badge float-end" id="detail-order-status"></span>
+                </div>
+                <div class="card-body">
+                    <p><strong>Customer ID:</strong> <span id="detail-customer-id"></span></p>
+                    <p><strong>Customer Name:</strong> <span id="detail-customer-name"></span></p>
+                    <p><strong>Customer Phone:</strong> <span id="detail-customer-phone"></span></p>
+                    <p><strong>Order Date:</strong> <span id="detail-order-date"></span></p>
+                    <hr>
+                    <h5>Order Items:</h5>
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Drink</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-order-items">
+                            </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-end">Total Drinks:</th>
+                                <td id="detail-total-drinks"></td>
+                            </tr>
+                            <tr>
+                                <th colspan="3" class="text-end">Total Price:</th>
+                                <td id="detail-total-price"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-success confirm-order-btn-detail" style="display:none;">Confirm Order</button>
+                        <button class="btn btn-danger cancel-order-btn-detail" style="display:none;">Cancel Order</button>
+                    </div>
+                </div>
+            </div>
+            <p id="no-order-selected">Select an order from the left to view details.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const detailCard = document.getElementById('order-details-card');
+    const noOrderSelected = document.getElementById('no-order-selected');
+    const detailOrderId = document.getElementById('detail-order-id');
+    const detailOrderStatus = document.getElementById('detail-order-status');
+    const detailCustomerId = document.getElementById('detail-customer-id');
+    const detailCustomerName = document.getElementById('detail-customer-name');
+    const detailCustomerPhone = document.getElementById('detail-customer-phone');
+    const detailOrderDate = document.getElementById('detail-order-date');
+    const detailOrderItems = document.getElementById('detail-order-items');
+    const detailTotalDrinks = document.getElementById('detail-total-drinks');
+    const detailTotalPrice = document.getElementById('detail-total-price');
+    const confirmDetailBtn = document.querySelector('.confirm-order-btn-detail');
+    const cancelDetailBtn = document.querySelector('.cancel-order-btn-detail');
+
+    function fetchOrderDetails(orderId) {
+        fetch(`/api/order_details/${orderId}/`)
+            .then(response => response.json())
+            .then(data => {
+                detailOrderId.textContent = data.id;
+                detailOrderStatus.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                detailOrderStatus.className = `badge float-end bg-${getStatusBadgeColor(data.status)}`;
+                detailCustomerId.textContent = data.customer.id || 'N/A';
+                detailCustomerName.textContent = data.customer.name || 'N/A';
+                detailCustomerPhone.textContent = data.customer.phone || 'N/A';
+                detailOrderDate.textContent = data.order_date;
+                detailTotalDrinks.textContent = data.total_drinks;
+                detailTotalPrice.textContent = `$${data.total_price.toFixed(2)}`;
+
+                detailOrderItems.innerHTML = '';
+                data.items.forEach(item => {
+                    const row = detailOrderItems.insertRow();
+                    row.insertCell(0).textContent = item.drink_name;
+                    row.insertCell(1).textContent = `$${item.price.toFixed(2)}`;
+                    row.insertCell(2).textContent = item.quantity;
+                    row.insertCell(3).textContent = `$${item.subtotal.toFixed(2)}`;
+                });
+
+                if (data.status === 'pending') {
+                    confirmDetailBtn.style.display = 'block';
+                    cancelDetailBtn.style.display = 'block';
+                    confirmDetailBtn.dataset.orderId = data.id;
+                    cancelDetailBtn.dataset.orderId = data.id;
+                } else {
+                    confirmDetailBtn.style.display = 'none';
+                    cancelDetailBtn.style.display = 'none';
+                }
+
+                detailCard.style.display = 'block';
+                noOrderSelected.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error fetching order details:', error);
+                alert('Failed to load order details.');
+            });
+    }
+
+    function getStatusBadgeColor(status) {
+        switch (status) {
+            case 'pending': return 'warning';
+            case 'accepted': return 'primary';
+            case 'completed': return 'success';
+            case 'cancelled': return 'danger';
+            default: return 'secondary';
+        }
+    }
+
+    // Event listeners for "View Details" buttons
+    document.querySelectorAll('.view-details-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const orderId = this.dataset.orderId;
+            fetchOrderDetails(orderId);
+        });
+    });
+
+    // Event listener for "Confirm" buttons in the table
+    document.querySelectorAll('.confirm-order-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const orderId = this.dataset.orderId;
+            if (confirm(`Are you sure you want to CONFIRM order ${orderId}?`)) {
+                sendActionRequest(`{% url 'confirm_order' 0 %}`.replace('0', orderId), orderId);
+            }
+        });
+    });
+
+    // Event listener for "Cancel" buttons in the table
+    document.querySelectorAll('.cancel-order-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const orderId = this.dataset.orderId;
+            if (confirm(`Are you sure you want to CANCEL order ${orderId}?`)) {
+                sendActionRequest(`{% url 'cancel_order' 0 %}`.replace('0', orderId), orderId);
+            }
+        });
+    });
+
+    // Event listeners for "Confirm/Cancel" buttons in the detail card
+    confirmDetailBtn.addEventListener('click', function() {
+        const orderId = this.dataset.orderId;
+        if (confirm(`Are you sure you want to CONFIRM order ${orderId}?`)) {
+            sendActionRequest(`{% url 'confirm_order' 0 %}`.replace('0', orderId), orderId);
+        }
+    });
+
+    cancelDetailBtn.addEventListener('click', function() {
+        const orderId = this.dataset.orderId;
+        if (confirm(`Are you sure you want to CANCEL order ${orderId}?`)) {
+            sendActionRequest(`{% url 'cancel_order' 0 %}`.replace('0', orderId), orderId);
+        }
+    });
+
+    function sendActionRequest(url, orderId) {
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json' // Important for Django's CSRF to work with non-form data
+            },
+            body: JSON.stringify({}) // Send an empty JSON object
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert(data.message);
+                // Reload the page or update the specific row/card dynamically
+                location.reload(); // Simple reload for now
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred.');
+        });
+    }
+});
+</script>
+{% endblock %}

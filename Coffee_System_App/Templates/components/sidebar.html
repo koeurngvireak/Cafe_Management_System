@@ -19,33 +19,40 @@
     </div>
 
     <ul class="sidebar-menu">
-        <li class="menu-item {% if request.path == '/dashboard/' %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-2s">
-            <a href="{% url 'dashboard' %}">
+        <li class="menu-item {% if request.path == '/overview/' %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-2s">
+            <a href="{% url 'overview' %}">
                 <i class="fas fa-tachometer-alt"></i>
                 <span>Over_View</span>
             </a>
         </li>
-        <li class="menu-item {% if 'orders' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-3s">
-            <a href="{% url 'orders' %}">
+        <li class="menu-item {% if 'pos_system' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-3s">
+            <a href="{% url 'pos_system' %}">
+                <i class="fas fa-receipt"></i>
+                <span>POS</span>
+                <span class="badge bg-danger float-end"></span>
+            </a>
+        </li>
+        <li class="menu-item {% if 'accept_order' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-3s">
+            <a href="{% url 'accept_order' %}">
                 <i class="fas fa-receipt"></i>
                 <span>Accept_Order</span>
                 <span class="badge bg-danger float-end"></span>
             </a>
         </li>
-        <li class="menu-item {% if 'inventory' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-4s">
-            <a href="{% url 'inventory' %}">
+        <li class="menu-item {% if 'pending_orders' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-4s">
+            <a href="{% url 'pending_orders' %}">
                 <i class="fas fa-boxes"></i>
                 <span>Pending</span>
             </a>
         </li>
-        <li class="menu-item {% if 'customers' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-5s">
-            <a href="{% url 'customers' %}">
+        <li class="menu-item {% if 'update_drink' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-5s">
+            <a href="{% url 'update_drink' %}">
                 <i class="fas fa-users"></i>
                 <span>Update_drink</span>
             </a>
         </li>
-        <li class="menu-item {% if 'settings' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-6s">
-            <a href="#">
+        <li class="menu-item {% if 'cheach_history' in request.path %}active{% endif %} animate__animated animate__fadeInLeft animate__delay-6s">
+            <a href="{% url 'cheach_history' %}">
                 <i class="fas fa-cog"></i>
                 <span>Cheach_History</span>
             </a>
@@ -271,3 +278,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+

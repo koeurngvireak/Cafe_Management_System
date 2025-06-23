@@ -1,149 +1,130 @@
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
 {% load static %}
+
+{% block title %}Overview - Coffee Management System{% endblock %}
+
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Panel</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-    }
-    
-    .main {
-      margin-left: 240px;
-      padding: 20px;
-    }
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .topbar input {
-      padding: 8px;
-      width: 300px;
-    }
-    .cards {
-      display: flex;
-      gap: 20px;
-      margin: 20px 0;
-    }
-    .card1 {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      flex: 1;
-      text-align: center;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .card2 {
-      background : white;
-      padding: 20px;
-      border-radius: 10px;
-      flex: 1;
-      text-align: center;
-      box-shadow: 0 0 10px rgba(188, 226, 97, 0.1);
-    }
-    .card3 {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      flex: 1;
-      text-align: center;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .charts {
-      display: flex;
-      gap: 20px;
-    }
-    .chart-card {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      flex: 1;
-    }
-  </style>
-</head>
-<body>
-
-
-  <div class="main">
-    <div class="topbar">
-      <input type="text" placeholder="Search here">
-      <div>
-        <span>🔔</span>
-        <span>👤</span>
-      </div>
+<div class="container mt-4">
+    <h1>Overview</h1>
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Today's Sales</h5>
+                    <p class="card-text fs-3">${{ daily_earnings|floatformat:2 }}</p>
+                    <p class="card-text">{{ daily_orders }} Orders</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Monthly Sales</h5>
+                    <p class="card-text fs-3">${{ monthly_earnings|floatformat:2 }}</p>
+                    <p class="card-text">{{ monthly_orders }} Orders</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Total Customers</h5>
+                    <p class="card-text fs-3">{{ total_customers }}</p>
+                    <p class="card-text">Registered/Identified</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">All-Time Sales</h5>
+                    <p class="card-text fs-3">${{ all_time_earnings|floatformat:2 }}</p>
+                    <p class="card-text">{{ all_time_orders }} Orders</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="cards">
-      <div class="card1">
-        <i class="bi bi-safe2-fill" style="font-size: 2rem; color:rgb(194, 200, 126);"></i>
-        <h3>60</h3>
-        <p >Sale</p>
-      </div>
-      <div class="card2">
-        <i class="bi bi-person-fill" style="font-size: 2rem; color:rgb(8, 16, 12);"></i>
-        <h3>5</h3>
-        <p>Costomer</p>
-      </div>
-      <div class="card3">
-        <i class="bi bi-cup-hot" style="font-size: 2rem; color:rgb(97, 144, 151);"></i>
-        <h3>$168<h3>
-        <p>Eamging</p>
-      </div>
-     
+    <div class="mt-4">
+        <h2>Sales Chart (Last 7 Days)</h2>
+        <canvas id="salesChart" width="400" height="150"></canvas>
     </div>
+</div>
 
-    <div class="charts">
-      <div class="chart-card">
-        <h3>Earnings (past 12 months)</h3>
-        <canvas id="earningsChart" height="200"></canvas>
-      </div>
-    
+{% endblock %}
 
-  <script>
-    // Line Chart
-    const earningsCtx = document.getElementById('earningsChart').getContext('2d');
-    new Chart(earningsCtx, {
-      type: 'line',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        datasets: [{
-          label: 'Earnings in $',
-          data: [2050, 1900, 2100, 1800, 2800, 2000, 2500, 2600, 2450, 1900, 2250, 2900],
-          borderColor: '#2d9c59',
-          backgroundColor: '#2d9c5910',
-          fill: false,
-          tension: 0.4,
-          pointBackgroundColor: '#2d9c59',
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: true }
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Chart Debugging Logs ---
+    console.log("Attempting to load Sales Chart...");
+    console.log("Raw Chart Labels:", '{{ chart_labels|safe }}');
+    console.log("Raw Chart Data:", '{{ chart_data|safe }}');
+
+    let labels;
+    let dataValues;
+    try {
+        labels = JSON.parse('{{ chart_labels|safe }}');
+        dataValues = JSON.parse('{{ chart_data|safe }}');
+        console.log("Parsed Chart Labels:", labels);
+        console.log("Parsed Chart Data:", dataValues);
+    } catch (e) {
+        console.error("Error parsing chart data JSON:", e);
+        // Fallback to empty arrays if parsing fails to prevent further errors
+        labels = [];
+        dataValues = [];
+    }
+
+    const ctx = document.getElementById('salesChart');
+    if (!ctx) {
+        console.error("Canvas element with ID 'salesChart' not found!");
+        return; // Exit if canvas is not found
+    }
+
+    const salesChart = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Daily Sales ($)',
+                data: dataValues,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderWidth: 1,
+                fill: true
+            }]
         },
-        scales: {
-          y: {
-            beginAtZero: false,
-            min: 1800,
-            max: 3000
-          }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // Allow canvas to resize based on parent
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Earnings ($)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '$' + context.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            }
         }
-      }
     });
-
-  
-  </script>
-
-</body>
-</html>
+    console.log("Sales Chart initialized successfully.");
+});
+</script>
 {% endblock %}
